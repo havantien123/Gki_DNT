@@ -68,7 +68,7 @@ export default function RegisterScreen() {
       Alert.alert("Đăng ký thành công!");
       router.replace("/login");
     } catch (err: any) {
-      console.error("Đăng ký lỗi:", err);
+      console.error("Lỗi đăng ký:", err.response?.data || err.message);
       Alert.alert("Lỗi", err.response?.data?.message || "Không thể đăng ký");
     }
   };

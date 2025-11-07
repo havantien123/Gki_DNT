@@ -10,6 +10,8 @@ const {
   updateProfile,
   getAllUsers,
   deleteUser,
+  getUserById,
+  updateUserById,
 } = require("../controllers/authController");
 const { protect, admin } = require("../middleware/authMiddleware");
 
@@ -45,5 +47,17 @@ router.get("/users", protect, admin, getAllUsers);
 
 // Xoá user (admin)
 router.delete("/users/:id", protect, admin, deleteUser);
+
+// Lấy thông tin 1 user theo ID (admin)
+router.get("/users/:id", protect, admin, getUserById);
+
+//update
+router.put(
+  "/users/:id",
+  protect,
+  admin,
+  upload.single("avatar"),
+  updateUserById
+);
 
 module.exports = router;

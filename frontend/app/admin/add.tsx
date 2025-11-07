@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   TextInput,
@@ -7,39 +7,18 @@ import {
   Image,
   StyleSheet,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_URL, BASE_URL } from "../../../config";
+import { API_URL } from "../../config";
 
-export default function EditUserScreen() {
+export default function AddUserScreen() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [avatar, setAvatar] = useState<any>(null);
-  const [currentAvatar, setCurrentAvatar] = useState("");
   const router = useRouter();
-  const { id } = useLocalSearchParams();
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
-
-  const fetchUser = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/auth/users/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const user = response.data;
-      setUsername(user.username);
-      setEmail(user.email);
-      setCurrentAvatar(user.avatar);
-    } catch (error) {
-      Alert.alert("Lỗi", "Không thể tải thông tin người dùng");
-      router.back();
-    }
-  };
 
   const pickImage = async () => {
     try {
@@ -59,8 +38,8 @@ export default function EditUserScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!username) {
-      Alert.alert("Lỗi", "Vui lòng điền username");
+    if (!username || !email || !password) {
+      Alert.alert("Lỗi", "Vui lòng điền đầy đủ thông tin");
       return;
     }
 
@@ -68,7 +47,8 @@ export default function EditUserScreen() {
       const token = await AsyncStorage.getItem("token");
       const formData = new FormData();
       formData.append("username", username);
-      formData.append("email", email); 
+      formData.append("email", email);
+      formData.append("password", password);
 
       if (avatar) {
         const localUri = avatar.uri;
@@ -83,35 +63,27 @@ export default function EditUserScreen() {
         } as any);
       }
 
-      await axios.put(`${API_URL}/auth/users/${id}`, formData, {
+      await axios.post(`${API_URL}/auth/register`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       });
 
-      Alert.alert("Thành công", "Đã cập nhật người dùng");
+      Alert.alert("Thành công", "Đã thêm người dùng mới");
       router.back();
     } catch (error: any) {
-      console.log("Lỗi cập nhật:", error);
       Alert.alert(
         "Lỗi",
-        error.response?.data?.message || "Không thể cập nhật người dùng"
+        error.response?.data?.message || "Không thể thêm người dùng"
       );
     }
   };
 
   return (
     <View style={styles.container}>
-      <Button title="Chọn ảnh mới" onPress={pickImage} />
-      {avatar ? (
-        <Image source={{ uri: avatar.uri }} style={styles.avatar} />
-      ) : currentAvatar ? (
-        <Image
-          source={{ uri: `${BASE_URL}${currentAvatar}` }}
-          style={styles.avatar}
-        />
-      ) : null}
+      <Button title="Chọn ảnh" onPress={pickImage} />
+      {avatar && <Image source={{ uri: avatar.uri }} style={styles.avatar} />}
       <TextInput
         placeholder="Username"
         value={username}
@@ -121,10 +93,17 @@ export default function EditUserScreen() {
       <TextInput
         placeholder="Email"
         value={email}
-        editable={false}
-        style={[styles.input, styles.disabled]}
+        onChangeText={setEmail}
+        style={styles.input}
       />
-      <Button title="Cập nhật" onPress={handleSubmit} />
+      <TextInput
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        style={styles.input}
+      />
+      <Button title="Thêm" onPress={handleSubmit} />
     </View>
   );
 }
@@ -146,8 +125,5 @@ const styles = StyleSheet.create({
     padding: 10,
     marginVertical: 5,
     borderRadius: 5,
-  },
-  disabled: {
-    backgroundColor: "#f0f0f0",
   },
 });

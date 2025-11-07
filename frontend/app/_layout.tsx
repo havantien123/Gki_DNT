@@ -7,6 +7,7 @@ export default function Layout() {
       <Stack.Screen name="login" options={{ title: "Đăng nhập" }} />
       <Stack.Screen name="register" options={{ title: "Đăng ký" }} />
       <Stack.Screen name="profile" options={{ title: "Hồ sơ" }} />
+      <Stack.Screen name="admin" options={{ title: "Quản lý" }} />
     </Stack>
   );
 }
